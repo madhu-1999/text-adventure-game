@@ -23,3 +23,4 @@
   - [ ] API to process user input, generate response and store story log
   - [ ] UI element to display the entire story log
 - [ ] Frontend and backend docker setup
+- [ ] Integrate logging
