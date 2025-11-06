@@ -76,3 +76,10 @@ class TestUserRepository:
         assert user is not None
         assert user.username == sample_user_db.username
         assert user.email == sample_user_db.email
+
+    def test_get_user_by_id(self, test_db, sample_user_db):
+        repo = UserRepository(test_db)
+
+        user = repo.get_by_id(sample_user_db.id)
+
+        assert user is not None

@@ -132,3 +132,47 @@ class TestUserService:
         
         # Assert
         mock_hash.assert_called_once_with("Test1234@")
+
+    @pytest.mark.asyncio
+    @patch('server.src.service.user_service.verify_password')
+    async def test_authenticate_user_success(self, mock_verify, user_service, mock_repository):
+        mock_repository.get_by_username.return_value = UserDTO(
+            id=1,
+            username="testuser",
+            email="test@example.com",
+            password="hashed_password"
+        )
+
+        mock_verify.return_value = True
+        await user_service.authenticate_user(username="testuser", password="password")
+
+        mock_verify.assert_called_once_with(password="password", hashed_pass="hashed_password")
+        mock_repository.get_by_username.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch('server.src.service.user_service.verify_password')
+    async def test_authenticate_user_not_found(self, mock_verify, user_service, mock_repository):
+        mock_repository.get_by_username.return_value = None
+
+        mock_verify.return_value = True
+        await user_service.authenticate_user(username="testuser", password="password")
+
+        mock_verify.assert_not_called()
+        mock_repository.get_by_username.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch('server.src.service.user_service.verify_password')
+    async def test_authenticate_user_password_invalid(self, mock_verify, user_service, mock_repository):
+        mock_repository.get_by_username.return_value = UserDTO(
+            id=1,
+            username="testuser",
+            email="test@example.com",
+            password="hashed_password"
+        )
+
+        mock_verify.return_value = False
+        authenticated_user = await user_service.authenticate_user(username="testuser", password="password")
+
+        mock_verify.assert_called_once_with(password="password", hashed_pass="hashed_password")
+        mock_repository.get_by_username.assert_called_once()
+        assert authenticated_user is None

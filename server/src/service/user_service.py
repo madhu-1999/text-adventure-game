@@ -1,9 +1,10 @@
 import re
+from typing import Optional
 from email_validator import validate_email
 from server.src.exceptions import InvalidPasswordException, UsernameOrEmailExistsException
 from server.src.models.user import UserDTO, UserResponseDTO
 from server.src.repository.user_repository import IUserRepository
-from server.src.utils import get_hashed_password
+from server.src.utils import get_hashed_password, verify_password
 
 def is_password_valid(password: str) -> bool:
     """
@@ -69,3 +70,44 @@ class UserService():
         except Exception as e: 
             raise e
         
+    async def authenticate_user(self, username: str, password: str) -> Optional[UserDTO]:
+        """ Handles login process for a user
+
+        Args:
+            username (str): Username of user trying to login
+            password (str): Password of user trying to login
+
+        Returns:
+            Optional[UserDTO]: Returns UserDTO object if login is successful else returns None
+        """
+        # get user
+        try:
+            user : Optional[UserDTO] = self.repository.get_by_username(username=username)
+            if user is None:
+                return user
+            
+            # verify password
+            if not verify_password(password=password, hashed_pass=user.password):
+                return None
+            
+            return user
+        except Exception as e:
+            raise e
+        
+    async def get_user(self, user_id: int) -> Optional[UserResponseDTO]:
+        """ Fetch details of currently logged in user
+
+        Args:
+            user_id (int): Id of currently logged in user
+
+        Returns:
+            UserResponseDTO: If user details are found,
+            None: If user details are not found
+        """
+        try:
+            user = self.repository.get_by_id(user_id)
+            if user is None:
+                return None
+            return UserResponseDTO.model_validate(user)
+        except Exception as e:
+            raise e
