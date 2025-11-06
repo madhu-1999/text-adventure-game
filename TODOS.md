@@ -1,8 +1,8 @@
 # Todos
 
 - [ ] Session Management
-  - [ ] Register and Login API's
-  - [ ] DB setup for session management sqlite + SQLAlchemy
+  - [x] Register and Login API's
+  - [x] DB setup for session management sqlite + SQLAlchemy
   - [ ] UI pages for register and login
 - [ ] Story tag selection
   - [ ] API to get available story tags

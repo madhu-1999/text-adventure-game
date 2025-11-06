@@ -5,33 +5,32 @@ name: CI with uv and pytest
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
   build-and-test:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Change working directory to server
-      run: cd server/
-    - name: Set up uv and Python
-      uses: astral-sh/setup-uv@v1
-      with:
-        enable-cache: auto 
-    - name: Install dependencies
-      run: uv sync --all-groups
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: uv run pytest
+      - uses: actions/checkout@v4
+      - name: Change working directory to server
+        run: cd server/
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v1
+        with:
+          enable-cache: auto
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: uv run pytest
