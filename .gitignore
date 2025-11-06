@@ -5,7 +5,15 @@ build/
 dist/
 wheels/
 *.egg-info
-*.ipynb
-*.json
+
+# Database files
+*.db
+
 # Virtual environments
 .venv
+
+# Others
+*.ipynb
+*.json
+notes.md
+*.env
