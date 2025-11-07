@@ -9,6 +9,7 @@ import {
   Typography,
   Link,
   Paper,
+  Stack,
 } from "@mui/material";
 import { LockOutlined } from "@mui/icons-material";
 import { useState } from "react";
@@ -23,40 +24,42 @@ const Register = () => {
 
   return (
     <>
-      <Container maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            height: "100vh",
-            width: "100vw", // Width is 100% by default for block elements, but explicit is fine
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "white",
-          }}
-        >
+      <CssBaseline />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <Container maxWidth="xs">
           <Paper
-            elevation={2}
+            elevation={3}
             sx={{
-              m: 20,
+              pt: 2,
+              pb: 2,
               display: "flex",
               flexDirection: "column",
+              alignSelf: "center",
               alignItems: "center",
-              bgcolor: "background.paper",
-              borderRadius: 3,
-              border: "2px solid",
-              borderColor: "background.default",
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
+            <Avatar sx={{ m: 1, bgcolor: "primary.light" }}>
               <LockOutlined />
             </Avatar>
 
             <Typography variant="h5">Register</Typography>
-            <Typography></Typography>
-            <Typography></Typography>
-
-            <Box sx={{ m: 1, p: 1 }}>
+            <Stack
+              spacing={2}
+              sx={{
+                p: 4,
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <TextField
                 margin="normal"
                 required
@@ -68,7 +71,6 @@ const Register = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
-
               <TextField
                 margin="normal"
                 required
@@ -79,7 +81,6 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-
               <TextField
                 margin="normal"
                 required
@@ -94,22 +95,22 @@ const Register = () => {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2, bgcolor: "primary.dark" }}
+                sx={{ mt: 3, mb: 2 }}
                 onClick={handleRegister}
               >
                 Register
               </Button>
-              <Grid container justifyContent={"flex-end"}>
-                <Grid>
-                  <Link component={RouterLink} to="/login" color="text.primary">
-                    Already have an account? Login
-                  </Link>
-                </Grid>
+            </Stack>
+            <Grid container justifyContent={"flex-end"} width={"100%"} pr={2}>
+              <Grid>
+                <Link component={RouterLink} to="/login" color="text.primary">
+                  Already have an account? Login
+                </Link>
               </Grid>
-            </Box>
+            </Grid>
           </Paper>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
     </>
   );
 };

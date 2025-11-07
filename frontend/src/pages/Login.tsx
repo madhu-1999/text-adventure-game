@@ -10,6 +10,7 @@ import {
   Typography,
   Link,
   Paper,
+  Stack,
 } from "@mui/material";
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -21,29 +22,26 @@ function Login() {
   const handleLogin = () => {};
   return (
     <>
-      <Container maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            height: "100vh",
-            width: "100vw", // Width is 100% by default for block elements, but explicit is fine
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "white",
-          }}
-        >
+      <CssBaseline />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <Container maxWidth="xs">
           <Paper
-            elevation={2}
+            elevation={3}
             sx={{
-              m: 20,
+              pt: 2,
+              pb: 2,
               display: "flex",
               flexDirection: "column",
+              alignSelf: "center",
               alignItems: "center",
-              bgcolor: "background.paper",
-              borderRadius: 3,
-              border: "2px solid",
-              borderColor: "background.default",
             }}
           >
             <Avatar sx={{ m: 1, bgcolor: "primary.light" }}>
@@ -51,8 +49,15 @@ function Login() {
             </Avatar>
 
             <Typography variant="h5">Login</Typography>
-
-            <Box sx={{ mt: 1, p: 1 }}>
+            <Stack
+              spacing={2}
+              sx={{
+                p: 4,
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <TextField
                 margin="normal"
                 required
@@ -64,7 +69,6 @@ function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
-
               <TextField
                 margin="normal"
                 required
@@ -84,21 +88,21 @@ function Login() {
               >
                 Login
               </Button>
-              <Grid container justifyContent={"flex-end"}>
-                <Grid>
-                  <Link
-                    component={RouterLink}
-                    to="/register"
-                    color="text.primary"
-                  >
-                    Don't have an account? Register
-                  </Link>
-                </Grid>
+            </Stack>
+            <Grid container justifyContent={"flex-end"} width={"100%"} pr={2}>
+              <Grid>
+                <Link
+                  component={RouterLink}
+                  to="/register"
+                  color="text.primary"
+                >
+                  Don't have an account? Register
+                </Link>
               </Grid>
-            </Box>
+            </Grid>
           </Paper>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
     </>
   );
 }
