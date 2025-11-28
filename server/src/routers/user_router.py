@@ -7,9 +7,9 @@ from server.src.exceptions import InvalidPasswordException, UsernameOrEmailExist
 from server.src.models import UserDTO, Token, UserResponseDTO
 from server.src.utils import create_access_token
 
-router = APIRouter(prefix="/users", tags=["users"])
+user_router = APIRouter(prefix="/users", tags=["users"])
 
-@router.post("/register", summary="User Registration", response_model=UserResponseDTO, status_code=status.HTTP_201_CREATED)
+@user_router.post("/register", summary="User Registration", response_model=UserResponseDTO, status_code=status.HTTP_201_CREATED)
 async def register(user: UserDTO, user_service = Depends(get_user_service)):
     try:
         return await user_service.register_user(user)
@@ -18,7 +18,7 @@ async def register(user: UserDTO, user_service = Depends(get_user_service)):
     except:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Registration failed!") 
 
-@router.post("/login", summary="Create access and refresh token for the user", response_model=Token)
+@user_router.post("/login", summary="Create access and refresh token for the user", response_model=Token)
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], user_service = Depends(get_user_service)):
     try:
         user = await user_service.authenticate_user(form_data.username, form_data.password)
@@ -38,7 +38,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], user
             detail={str(e)}
         )
     
-@router.get('/me', summary='Get details of currently logged in user', response_model=UserResponseDTO)
+@user_router.get('/me', summary='Get details of currently logged in user', response_model=UserResponseDTO)
 async def get_me(user_id: int = Depends(get_current_user), user_service = Depends(get_user_service)):
     try:
         user =  await user_service.get_user(user_id)
