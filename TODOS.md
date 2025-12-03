@@ -5,7 +5,7 @@
   - [x] DB setup for session management sqlite + SQLAlchemy
   - [x] UI pages for register and login
 - [ ] Story tag selection
-  - [ ] API to get available story tags
+  - [x] API to get available story tags
   - [ ] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
   - [ ] Link generated story base to a user
   - [ ] UI for tag selection

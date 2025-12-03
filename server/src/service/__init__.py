@@ -1,2 +1,3 @@
 from .user_service import UserService
-__all__ = ['UserService']
+from .story_service import StoryService
+__all__ = ['UserService', 'StoryService']
