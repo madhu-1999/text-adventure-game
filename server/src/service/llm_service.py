@@ -1,5 +1,5 @@
 import json
-from typing import Any, Optional, Set
+from typing import Any, Optional, Set, Type
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
@@ -7,17 +7,10 @@ from pydantic import BaseModel
 from server.db.models import WorldDB
 from server.src.repository.story_repository import IStoryRepository
 from server.src.repository.world_repository import IWorldRepository
-from server.src.models.story import WorldDTO
+from server.src.models.story import WorldDTO, get_target_world_schema, convert_world_db_to_world_dto
 
-def convertToJson(obj: BaseModel, attributes: Set[str]):
-    return obj.model_dump_json(include=attributes, indent=4)
-
-def convert_world_db_to_world_dto(world: WorldDB) -> WorldDTO:
-    if isinstance(world.world, str):
-        properties: dict[str, Any] = json.loads(world.world) # type: ignore
-    else:
-        properties: dict[str, Any] = world.world # type: ignore
-    return WorldDTO(id=world.id, name=properties.get('name'), description=properties.get('description')) # type: ignore
+def convertToJson(obj: BaseModel, include_attributes: Optional[Set[str]] = None, exclude_attributes: Optional[Set[str]] = None):
+        return obj.model_dump_json(include=include_attributes, exclude=exclude_attributes, indent=4)
 
 class LLMService:
     def __init__(self, story_repository: IStoryRepository, world_repository: IWorldRepository) -> None:
@@ -37,8 +30,10 @@ Instructions:
         world_prompt = f"""
 Generate a creative description for a unique {tag} world based on this prompt: {prompt}"""
         
+        # Get the target schema
+        target_schema: Type[WorldDTO] = get_target_world_schema(tag)
         #Define output schema
-        llm = self.model.with_structured_output(WorldDTO)
+        llm = self.model.with_structured_output(target_schema)
 
         # Define prompt
         final_prompt = ChatPromptTemplate.from_messages([
@@ -49,9 +44,9 @@ Generate a creative description for a unique {tag} world based on this prompt: {
         chain = final_prompt | llm
         response = chain.invoke({"topic": "fictional worlds"})
         if isinstance(response, WorldDTO):
-            world: WorldDB = WorldDB(world=convertToJson(response, attributes={"name", "description"}))
+            world: WorldDB = WorldDB(world=convertToJson(response, exclude_attributes={"id"}))
             world = self.world_repository.create_world(world=world)
             if world:
-                return convert_world_db_to_world_dto(world)
+                return convert_world_db_to_world_dto(world, target_schema)
         return None
         

@@ -1,8 +1,7 @@
-from typing import Optional, Set
+from typing import Optional
 import uuid
 
 from fastapi import HTTPException, status
-from pydantic import BaseModel
 from server.src.models.story import CreateStoryDTO, StorySettingsDTO, TagDTO, TagsResponseDTO, WorldDTO
 from server.src.repository.story_repository import IStoryRepository
 from server.db.models import UserStoryDB
