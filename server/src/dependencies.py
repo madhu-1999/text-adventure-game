@@ -1,16 +1,17 @@
 from datetime import datetime
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
+
 from server.db.db import get_db
 from server.src.models import TokenData
-from server.src.repository import IUserRepository, UserRepository
-from server.src.repository.story_repository import IStoryRepository
-from server.src.repository.story_repository_impl import StoryRepository
-from server.src.service import UserService
-from server.src.service.story_service import StoryService
+from server.src.models.user import UserResponseDTO
+from server.src.repository import IUserRepository, UserRepository, IStoryRepository, StoryRepository, IWorldRepository, WorldRepository
+from server.src.service import UserService, StoryService, LLMService
 from server.src.utils import ALGORITHM, JWT_SECRET_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/users/login', scheme_name='JWT')
@@ -21,13 +22,19 @@ async def get_user_repository(db: Session = Depends(get_db)) -> IUserRepository:
 async def get_story_repository(db: Session = Depends(get_db)) -> IStoryRepository:
     return StoryRepository(db)
 
+async def get_world_repository(db: Session = Depends(get_db)) -> IWorldRepository:
+    return WorldRepository(db)
+
 async def get_user_service(repository: IUserRepository = Depends(get_user_repository)) -> UserService:
     return UserService(repository)
 
-async def get_story_service(repository: IStoryRepository = Depends(get_story_repository)) -> StoryService:
-    return StoryService(repository)
+async def get_llm_service(story_repository: IStoryRepository = Depends(get_story_repository), world_repository: IWorldRepository = Depends(get_world_repository)) -> LLMService:
+    return LLMService(story_repository, world_repository)
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> int:
+async def get_story_service(repository: IStoryRepository = Depends(get_story_repository), llm_service: LLMService =  Depends(get_llm_service)) -> StoryService:
+    return StoryService(repository, llm_service)
+
+async def get_current_user(token: str = Depends(oauth2_scheme), user_service: UserService = Depends(get_user_service)) -> Optional[UserResponseDTO]:
     """Gets user id of currently logged in user by decoding access token
 
     Args:
@@ -50,7 +57,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> int:
                 detail="Token expired"
             )
         
-        return token_data.sub
+        return await user_service.get_user(token_data.sub)
     except (JWTError, ValidationError) as e:
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

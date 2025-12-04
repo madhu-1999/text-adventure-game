@@ -1,3 +1,4 @@
 from .user_service import UserService
 from .story_service import StoryService
-__all__ = ['UserService', 'StoryService']
+from .llm_service import LLMService
+__all__ = ['UserService', 'StoryService', 'LLMService']
