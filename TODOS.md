@@ -6,10 +6,10 @@
   - [x] UI pages for register and login
 - [ ] Story tag selection
   - [x] API to get available story tags
-  - [ ] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
-  - [ ] Link generated story base to a user
+  - [x] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
+  - [x] Link generated story base to a user
+  - [ ] Integrate vector db for RAG. Store generated story in it
   - [ ] UI for tag selection
-  - [ ] Put generated story base file into a file server
 - [ ] Character selection
   - [ ] API to post character selection (from a list of NPC's - in story base file)
   - [ ] Link character selected to user story

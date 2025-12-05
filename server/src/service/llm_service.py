@@ -3,7 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableBranch, RunnableLambda
 
-from server.src.models.story import WorldDTO, WorldSettingDTO, convert_to_world_dto, get_target_location_schema, get_target_world_schema
+from server.src.models.story import WorldDTO, WorldSettingDTO, convert_to_world_dto, get_target_character_schema, get_target_location_schema, get_target_world_schema
 
 
 class LLMService:
@@ -77,6 +77,20 @@ Generate a creative description for a unique {tag} world based on this prompt: {
             # Define chain to generate locations using world setting data
             location_chain = location_prompt | location_llm
 
+        # Get target character schema and prompt
+        (character_prompt_template, target_character_schema) = get_target_character_schema(tag)
+
+        # Define output schema
+        character_llm = self.model.with_structured_output(target_character_schema)
+
+        # Define character prompt
+        character_prompt = ChatPromptTemplate.from_messages([
+            ('human', character_prompt_template)
+        ])
+
+        # Define chain to generate characters from world settings and locations
+        character_chain = character_prompt | character_llm
+
         # Generate world setting data
         # This also makes world setting data available as input variable
         world_data_chain = RunnablePassthrough.assign(
@@ -98,10 +112,15 @@ Generate a creative description for a unique {tag} world based on this prompt: {
             RunnablePassthrough()
         )
 
+        # Chain to generate characters
+        character_data_chain = RunnablePassthrough.assign(
+            characters_data=character_chain
+        )
         # Final chain
         pipeline = (
             world_data_chain
             | optional_location_data_chain
+            | character_data_chain
         )
             
         result_dict = pipeline.invoke({"topic": "fictional worlds"})

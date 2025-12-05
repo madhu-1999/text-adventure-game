@@ -40,7 +40,6 @@ class UserStoryDB(Base):
     tag_id = Column(Integer, ForeignKey("tags.id"), nullable=False)
     prompt = Column(String(120), nullable=False)
     world_id = Column(Integer, ForeignKey("world.id"), nullable=False)
-    is_setup = Column(Boolean, default=False)
 
     world = relationship("WorldDB", back_populates="stories")
 

@@ -1,8 +1,8 @@
 """Story settings tables
 
-Revision ID: c3ce5088adba
+Revision ID: 3859d87a3476
 Revises: 056ca88b8731
-Create Date: 2025-12-03 19:49:52.300746
+Create Date: 2025-12-05 14:56:41.535764
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c3ce5088adba'
+revision: str = '3859d87a3476'
 down_revision: Union[str, None] = '056ca88b8731'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,7 +32,6 @@ def upgrade() -> None:
     sa.Column('tag_id', sa.Integer(), nullable=False),
     sa.Column('prompt', sa.String(length=120), nullable=False),
     sa.Column('world_id', sa.Integer(), nullable=False),
-    sa.Column('is_setup', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['world_id'], ['world.id'], ),
