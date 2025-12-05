@@ -28,11 +28,11 @@ async def get_world_repository(db: Session = Depends(get_db)) -> IWorldRepositor
 async def get_user_service(repository: IUserRepository = Depends(get_user_repository)) -> UserService:
     return UserService(repository)
 
-async def get_llm_service(story_repository: IStoryRepository = Depends(get_story_repository), world_repository: IWorldRepository = Depends(get_world_repository)) -> LLMService:
-    return LLMService(story_repository, world_repository)
+async def get_llm_service() -> LLMService:
+    return LLMService()
 
-async def get_story_service(repository: IStoryRepository = Depends(get_story_repository), llm_service: LLMService =  Depends(get_llm_service)) -> StoryService:
-    return StoryService(repository, llm_service)
+async def get_story_service(repository: IStoryRepository = Depends(get_story_repository), world_repository: IWorldRepository = Depends(get_world_repository), llm_service: LLMService =  Depends(get_llm_service)) -> StoryService:
+    return StoryService(repository, world_repository, llm_service)
 
 async def get_current_user(token: str = Depends(oauth2_scheme), user_service: UserService = Depends(get_user_service)) -> Optional[UserResponseDTO]:
     """Gets user id of currently logged in user by decoding access token

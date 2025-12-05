@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from server.db.models import TagsDB, UserStoryDB
+from server.db.models import TagsDB, UserStoryDB, WorldDB
 
 
 class IStoryRepository(ABC):
@@ -14,5 +14,5 @@ class IStoryRepository(ABC):
         pass
 
     @abstractmethod
-    def add_story(self, user_story: UserStoryDB) -> UserStoryDB:
+    def add_story_and_world(self, user_story: UserStoryDB, world: WorldDB) -> Tuple[UserStoryDB, WorldDB]:
         pass

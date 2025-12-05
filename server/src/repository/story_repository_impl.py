@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from server.src.exceptions import DatabaseError
 from sqlalchemy import insert, select
 
-from server.db.models import TagsDB, UserStoryDB
+from server.db.models import TagsDB, UserStoryDB, WorldDB
 from .story_repository import IStoryRepository
 
 
@@ -32,8 +32,23 @@ class StoryRepository(IStoryRepository):
         except SQLAlchemyError as e:
             raise DatabaseError(f"Failed to retrieve user by id {id}: {str(e)}") from e
         
-    def add_story(self, user_story: UserStoryDB) -> Optional[UserStoryDB]:
+    def add_story_and_world(self, user_story: UserStoryDB, world: WorldDB) -> Tuple[UserStoryDB, WorldDB]:
         try:
+            # Save world
+            stmt = insert(WorldDB).values(
+                world=world.world
+            ).returning(
+                WorldDB
+            )
+            saved_world = self.session.execute(stmt).first()
+            if not saved_world:
+                self.session.rollback()
+                raise DatabaseError("Could not insert world!")
+            
+            # Set world_id
+            user_story.id = saved_world[0].id
+
+            # Save user story
             stmt = insert(UserStoryDB).values(
                 user_id=user_story.user_id,
                 title=user_story.title,
@@ -43,10 +58,12 @@ class StoryRepository(IStoryRepository):
             ).returning(
                 UserStoryDB
             )
-            result = self.session.execute(stmt).first()
+            saved_user_story = self.session.execute(stmt).first()
+            if not saved_user_story:
+                self.session.rollback()
+                raise DatabaseError("Could not insert story:")
             self.session.commit()
-            if result:
-                return result[0]
+            return (saved_user_story[0], saved_world[0])
         except IntegrityError as e:
             self.session.rollback()
             raise DatabaseError(f"Could not insert story: {str(e)}") from e

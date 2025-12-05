@@ -1,10 +1,10 @@
 import json
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Optional, Set, Tuple, Type, Union, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from server.db.models import WorldDB
-from server.src.models.enums import Tags
+from server.src.models.enums import LocationPrompt, Tags
 
 
 class TagDTO(BaseModel):
@@ -21,8 +21,7 @@ class CreateStoryDTO(BaseModel):
     tag_id: int
     prompt: str
 
-class BaseWorldDTO(BaseModel):
-    id: int = Field(description="A unique integer identifier for the world")
+class BaseWorldSettingDTO(BaseModel):
     name: str = Field(description="Name of the fictional world")
     description: str = Field(description="A brief description of the world")
 
@@ -32,23 +31,46 @@ class PowerSystem(BaseModel):
     rules: List[str] = Field(description="List of 3 rules of the power system")
     limitations: List[str] = Field(description="List of 3 limitations of the power system")
 
-class FantasyWorldDTO(BaseWorldDTO):
+class FantasyWorldSettingDTO(BaseWorldSettingDTO):
     power_systems: List[PowerSystem] = Field(description=" 3 different power systems that exist in this world")
 
-class RomanceWorldDTO(BaseWorldDTO):
+class RomanceWorldSettingDTO(BaseWorldSettingDTO):
     time_period: str = Field(description="Time period in which story is set ex: 1950s, 1700s")
     location: str = Field(description="Location where story is set ex: Tokyo, London")
     tone: str = Field(description="One word identifier for tone ex: sweet/steamy/angsty/emotional")
     societal_norms: List[str] = Field(description="3 norms related to dating or society in the story setting")
 
-class MysteryWorldDTO(BaseWorldDTO):
+class MysteryWorldSettingDTO(BaseWorldSettingDTO):
     type: str = Field(description="Mystery subgenre ex: noir/cozy/medical")
     time_period: str = Field(description="Time period in which story is set ex: 1950s, 1700s")
     location: str = Field(description="Location where story is set ex: Tokyo, London")
-    role: str = Field(description="Role the human assumes ex:PI/detective/forensic scientist/lawyer")
+    #role: str = Field(description="Role the human assumes ex:PI/detective/forensic scientist/lawyer")
     crime: str = Field(description="Type of crime ex: murder/embezzlement/fraud")
 
-WorldDTO = Union[FantasyWorldDTO, RomanceWorldDTO, MysteryWorldDTO]
+WorldSettingDTO = Union[FantasyWorldSettingDTO, RomanceWorldSettingDTO, MysteryWorldSettingDTO]
+
+class LocationDTO(BaseModel):
+    name: str = Field(description="Name of location, can be descriptive")
+    description: str = Field(description="Brief description of the location")
+
+class FantasyLocationDTO(LocationDTO):
+    type: str = Field(description="Type of location ex: kingdom/town/city/country")
+    government_type: str = Field(description="Type of government ex: monarchy/dictatorship/democracy/communism")
+
+class MysteryLocationDTO(LocationDTO):
+    type: str = Field(description="Type of location ex: crime scene/business/public space")
+    clues: List[str] = Field(description="A list of physical clues or evidence found at the location")
+
+Locations = Union[FantasyLocationDTO, MysteryLocationDTO]
+
+class LocationsDTO(BaseModel):
+    locations: List[Locations] = Field(description="List of locations relevant to the world")
+
+class WorldDTO(BaseModel):
+    id: int
+    setting: WorldSettingDTO
+    locations: Optional[LocationsDTO]
+    # extend
 
 class StorySettingsDTO(BaseModel):
     id: int
@@ -58,18 +80,50 @@ class StorySettingsDTO(BaseModel):
     world : WorldDTO
     is_setup: bool
 
-def get_target_world_schema(tag: str) -> Type[WorldDTO]:
+def get_target_location_schema(tag: str) -> Optional[Tuple[str, Type[LocationsDTO]]]:
+    """
+    Generates a specific Pydantic RootModel at runtime
+    """
+    match tag:
+        case Tags.FANTASY:
+            dynamic_class = FantasyLocationDTO
+            prompt = LocationPrompt.FANTASY
+        case Tags.MYSTERY:
+            dynamic_class = MysteryLocationDTO
+            prompt = LocationPrompt.MYSTERY
+        case Tags.ROMANCE:
+            return None
+        case _:
+            dynamic_class = FantasyLocationDTO
+            prompt = LocationPrompt.FANTASY
+    
+    model = create_model(
+        'LocationsDTO',
+        locations=(List[dynamic_class], Field(description="List of locations relevant to the world"))
+    )
+
+    return (prompt, cast(Type[LocationsDTO], model))
+def get_target_world_schema(tag: str) -> Type[WorldSettingDTO]:
     match tag:
         case Tags.FANTASY: 
-            return FantasyWorldDTO
+            return FantasyWorldSettingDTO
         case Tags.ROMANCE:
-            return RomanceWorldDTO
+            return RomanceWorldSettingDTO
         case Tags.MYSTERY:
-            return MysteryWorldDTO
+            return MysteryWorldSettingDTO
         case _:
-            return FantasyWorldDTO
+            return FantasyWorldSettingDTO
         
-def convert_world_db_to_world_dto(world: WorldDB, target_schema: Type[WorldDTO]) -> WorldDTO:
+def convertToJson(obj: BaseModel, include_attributes: Optional[Set[str]] = None, exclude_attributes: Optional[Set[str]] = None):
+        return json.loads(obj.model_dump_json(include=include_attributes, exclude=exclude_attributes, indent=4))
+
+def convert_to_world_dto(world_data: dict[str, Any]):
+    locations = None
+    if 'locations_data' in world_data:
+        locations = convertToJson(world_data['locations_data'])
+    return WorldDTO(id=-1, setting=world_data['world_data'], locations=locations)
+   
+def convert_world_db_to_world_dto(world: WorldDB, target_schema: Type[WorldSettingDTO]) -> WorldSettingDTO:
     if isinstance(world.world, str):
         properties: dict[str, Any] = json.loads(world.world) # type: ignore
     else:
