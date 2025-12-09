@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from .routers.user_router import user_router
 from fastapi.middleware.cors import CORSMiddleware
+
+from .routers.story_router import story_router
+from .routers.user_router import user_router
 
 app = FastAPI() 
 # Configure CORS settings
@@ -16,3 +18,4 @@ app.add_middleware(
     allow_headers=["*"],         # Allows all headers
 )
 app.include_router(user_router)
+app.include_router(story_router)

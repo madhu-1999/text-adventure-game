@@ -5,15 +5,11 @@
   - [x] DB setup for session management sqlite + SQLAlchemy
   - [x] UI pages for register and login
 - [ ] Story tag selection
-  - [ ] API to get available story tags
-  - [ ] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
-  - [ ] Link generated story base to a user
+  - [x] API to get available story tags
+  - [x] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
+  - [x] Link generated story base to a user
+  - [x] Integrate vector db for RAG. Store generated story in it
   - [ ] UI for tag selection
-  - [ ] Put generated story base file into a file server
-- [ ] Character selection
-  - [ ] API to post character selection (from a list of NPC's - in story base file)
-  - [ ] Link character selected to user story
-  - [ ] UI for character selection
 - [ ] User stories selection
   - [ ] UI element (sidebar) to display all stories of a user
   - [ ] API to get all stories of a user

@@ -54,11 +54,11 @@ class UserService():
        
             # Check if username or email exists
             if self.repository.check_if_username_or_email_exists(username=user.username, email=user.email):
-                raise UsernameOrEmailExistsException(f"Username or email exists!")
+                raise UsernameOrEmailExistsException("Username or email exists!")
             
             # Check if password is valid
             if not is_password_valid(user.password):
-                raise InvalidPasswordException(f'Password is invalid!')
+                raise InvalidPasswordException('Password is invalid!')
             
             # Hash password
             hashed_pwd = get_hashed_password(user.password)

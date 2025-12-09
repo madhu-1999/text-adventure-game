@@ -15,7 +15,7 @@ async def register(user: UserDTO, user_service = Depends(get_user_service)):
         return await user_service.register_user(user)
     except (InvalidPasswordException, UsernameOrEmailExistsException, EmailNotValidError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except:
+    except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Registration failed!") 
 
 @user_router.post("/login", summary="Create access and refresh token for the user", response_model=Token)
@@ -39,9 +39,8 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], user
         )
     
 @user_router.get('/me', summary='Get details of currently logged in user', response_model=UserResponseDTO)
-async def get_me(user_id: int = Depends(get_current_user), user_service = Depends(get_user_service)):
+async def get_me(user: int = Depends(get_current_user)):
     try:
-        user =  await user_service.get_user(user_id)
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
