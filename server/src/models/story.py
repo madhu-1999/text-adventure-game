@@ -115,7 +115,6 @@ class StorySettingsDTO(BaseModel):
     title: str
     tag_id: int
     world : WorldDTO
-    is_setup: bool
 
 def get_target_character_schema(tag: str) -> Tuple[str, Type[CharactersDTO]]:
     """

@@ -8,12 +8,8 @@
   - [x] API to get available story tags
   - [x] API to post selected story tag (fantasy, romance etc..) and generate base for the story.
   - [x] Link generated story base to a user
-  - [ ] Integrate vector db for RAG. Store generated story in it
+  - [x] Integrate vector db for RAG. Store generated story in it
   - [ ] UI for tag selection
-- [ ] Character selection
-  - [ ] API to post character selection (from a list of NPC's - in story base file)
-  - [ ] Link character selected to user story
-  - [ ] UI for character selection
 - [ ] User stories selection
   - [ ] UI element (sidebar) to display all stories of a user
   - [ ] API to get all stories of a user

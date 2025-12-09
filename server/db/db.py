@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # server/ directory
 ENV_PATH = BASE_DIR / ".env"
-print(ENV_PATH)
 load_dotenv(dotenv_path=ENV_PATH, override=True)
 
 # Read db url from .env file

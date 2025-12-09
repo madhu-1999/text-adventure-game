@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from server.db.db import get_db
+from server.db.vector_store import VectorStore
 from server.src.models import TokenData
 from server.src.models.user import UserResponseDTO
 from server.src.repository import IUserRepository, UserRepository, IStoryRepository, StoryRepository, IWorldRepository, WorldRepository
@@ -31,8 +32,11 @@ async def get_user_service(repository: IUserRepository = Depends(get_user_reposi
 async def get_llm_service() -> LLMService:
     return LLMService()
 
-async def get_story_service(repository: IStoryRepository = Depends(get_story_repository), world_repository: IWorldRepository = Depends(get_world_repository), llm_service: LLMService =  Depends(get_llm_service)) -> StoryService:
-    return StoryService(repository, world_repository, llm_service)
+async def get_vector_db() -> VectorStore:
+    return VectorStore()
+
+async def get_story_service(repository: IStoryRepository = Depends(get_story_repository), world_repository: IWorldRepository = Depends(get_world_repository), llm_service: LLMService =  Depends(get_llm_service), vector_store: VectorStore = Depends(get_vector_db)) -> StoryService:
+    return StoryService(repository, world_repository, llm_service, vector_store)
 
 async def get_current_user(token: str = Depends(oauth2_scheme), user_service: UserService = Depends(get_user_service)) -> Optional[UserResponseDTO]:
     """Gets user id of currently logged in user by decoding access token
