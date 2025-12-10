@@ -33,6 +33,7 @@ class ChatService:
             return self._chat_repository.get_session(session_id=session_id)
         except Exception as e:
             raise e
+        
     async def start_session(self, story_id: int, user_id: int) -> Optional[ChatMessage]:
         try:
             # Create session
