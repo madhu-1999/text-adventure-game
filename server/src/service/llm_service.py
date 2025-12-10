@@ -1,8 +1,9 @@
-from typing import  Optional, Type
+from typing import  Any, Optional, Type
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableBranch, RunnableLambda
 
+from server.src.models.enums import ChatPrompt
 from server.src.models.story import WorldDTO, WorldSettingDTO, convert_to_world_dto, get_target_character_schema, get_target_location_schema, get_target_world_schema
 
 
@@ -126,3 +127,17 @@ Generate a creative description for a unique {tag} world based on this prompt: {
         result_dict = pipeline.invoke({"topic": "fictional worlds"})
         return convert_to_world_dto(result_dict)
         
+    def start_chat(self, world: dict[str, Any]) -> str:
+        # Define intial prompt
+        initial_prompt = ChatPromptTemplate.from_messages([
+            ("system", ChatPrompt.INITIAL_SYSTEM_PROMPT),
+            ("human",  "Generate introduction")
+        ])
+
+         # Define chain to generate intro message
+        chat_intro_chain = initial_prompt | self.model
+
+        result = chat_intro_chain.invoke(world)
+        if isinstance(result.content, str):
+            return result.content
+        return ''

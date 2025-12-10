@@ -192,3 +192,32 @@ def convert_world_db_to_world_dto(world: WorldDB, target_schema: Type[WorldSetti
         properties: dict[str, Any] = world.world # type: ignore
     properties['id'] = world.id
     return target_schema.model_validate(properties)
+
+def process_story(story: StorySettingsDTO) -> dict[str, Any]:
+    world = story.world
+
+    # Extract world settings
+    world_info: WorldSettingDTO = world.setting
+
+    # Extract locations
+    locations: List[Locations] = []
+    if world.locations:
+        locations = world.locations.locations
+
+    # Extract characters
+    characters: List[Characters]  = world.characters.characters
+
+    # Extract protagonist
+    protagonist: Characters = [character for character in characters if character.is_protagonist][0]
+    # Remove protagonist from character list
+    characters = [character for character in characters if not character.is_protagonist]
+    
+    return {
+        "world_info": world_info,
+        "locations": locations,
+        "characters": characters,
+        "protagonist": protagonist
+    }
+
+
+

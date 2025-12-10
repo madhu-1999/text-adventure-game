@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.story_router import story_router
 from .routers.user_router import user_router
+from .routers.chat_router import chat_router
 
 app = FastAPI() 
 # Configure CORS settings
@@ -19,3 +20,4 @@ app.add_middleware(
 )
 app.include_router(user_router)
 app.include_router(story_router)
+app.include_router(chat_router)

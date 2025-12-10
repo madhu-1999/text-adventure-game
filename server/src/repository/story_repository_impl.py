@@ -1,12 +1,19 @@
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from server.src.exceptions import DatabaseError
 from sqlalchemy import insert, select
+import json 
 
 from server.db.models import TagsDB, UserStoryDB, WorldDB
+from server.src.models.story import StorySettingsDTO
 from .story_repository import IStoryRepository
 
+def _convert_to_story_settings_dict(story_dict: dict[str, Any]) -> dict[str, Any]:
+    story_dict['world'] = json.loads(story_dict['world'])
+    world_id = story_dict.pop('world_id')
+    story_dict['world']['id'] = world_id
+    return story_dict
 
 class StoryRepository(IStoryRepository):
     def __init__(self, session: Session) -> None:
@@ -46,7 +53,7 @@ class StoryRepository(IStoryRepository):
                 raise DatabaseError("Could not insert world!")
             
             # Set world_id
-            user_story.id = saved_world[0].id
+            user_story.world_id = saved_world[0].id
 
             # Save user story
             stmt = insert(UserStoryDB).values(
@@ -67,5 +74,27 @@ class StoryRepository(IStoryRepository):
         except IntegrityError as e:
             self.session.rollback()
             raise DatabaseError(f"Could not insert story: {str(e)}") from e
+        except SQLAlchemyError as e:
+            raise DatabaseError(f"Failed to retrieve user by id {id}: {str(e)}") from e
+        
+    def get_story(self, story_id: int) -> Optional[StorySettingsDTO]:
+        try:
+            stmt = select(
+                UserStoryDB.id, 
+                UserStoryDB.user_id,
+                UserStoryDB.title,
+                UserStoryDB.tag_id,
+                UserStoryDB.world_id,
+                WorldDB.world
+                ).join_from(
+                    UserStoryDB, WorldDB, UserStoryDB.world_id == WorldDB.id
+                ).where(
+                    UserStoryDB.id == story_id
+                )
+            story = self.session.execute(stmt).first()
+            if story:
+                story_dict = _convert_to_story_settings_dict(story._asdict())
+                return StorySettingsDTO.model_validate(story_dict)
+            return None 
         except SQLAlchemyError as e:
             raise DatabaseError(f"Failed to retrieve user by id {id}: {str(e)}") from e

@@ -42,3 +42,30 @@ testimonies are consistent with how the criminal committed the crime.
 world data: {world_data}
 locations_data:{locations_data}
 """
+
+class ChatPrompt:
+    INITIAL_SYSTEM_PROMPT = """
+You are an AI Game master. Your job is to write what 
+happens next in a player's adventure game.
+
+=== World context ===
+world_info {world_info}
+locations {locations}
+characters {characters}
+protagonist {protagonist}
+
+===Your task for this first message===
+Create an engaging introduction that:
+1. Briefly describe the world (description, power systems, societal norms, events)
+2. Describe the protagonist (name, appearance, motives) in second person present tense. Ex. (You are...)
+3. Present a initial hook: where the protagonist is, the current situation and end 
+with a question or prompt for action
+
+Instructions: 
+1. Keep the message under 150 words 
+3. Use ONLY the world context provided above
+"""
+
+class Config:
+    MEMORY_THRESHOLD = 50
+    CHAT_HISTORY_SIZE = 10
