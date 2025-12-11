@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Literal, Optional
 from pydantic import BaseModel
+from sympy import content
 
 
 class ChatMessage(BaseModel):
@@ -15,6 +16,12 @@ class ChatMessage(BaseModel):
     class Config:
         from_attributes = True
 
+class LLMMessage(BaseModel):
+    role: Literal['human', 'ai']
+    content: str
+    class Config:
+        from_attributes = True
+        
 class ChatSession(BaseModel):
     id: Optional[int] = None
     story_id: int

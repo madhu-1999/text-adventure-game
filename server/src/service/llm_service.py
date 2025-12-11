@@ -1,8 +1,9 @@
-from typing import  Any, Optional, Type
+from typing import  Any, Dict, List, Optional, Type
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableBranch, RunnableLambda
 
+from server.src.models.chat import LLMMessage
 from server.src.models.enums import ChatPrompt
 from server.src.models.story import WorldDTO, WorldSettingDTO, convert_to_world_dto, get_target_character_schema, get_target_location_schema, get_target_world_schema
 
@@ -138,6 +139,25 @@ Generate a creative description for a unique {tag} world based on this prompt: {
         chat_intro_chain = initial_prompt | self.model
 
         result = chat_intro_chain.invoke(world)
+        if isinstance(result.content, str):
+            return result.content
+        return ''
+    
+    def send_message(self, context: Dict[str, Any], messages: List[LLMMessage], user_msg: str ) -> str:
+        # Define intial prompt
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", ChatPrompt.SYSTEM_PROMPT),
+            ("human",  user_msg)
+        ])
+
+         # Define chain to generate llm message
+        chat_chain = prompt | self.model
+
+        result = chat_chain.invoke({
+            "settings": context['settings'],
+            "chat_history": context['chat_history'],
+            "messages": messages
+        })
         if isinstance(result.content, str):
             return result.content
         return ''

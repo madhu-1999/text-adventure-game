@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import BackgroundTasks, HTTPException, status
 from server.db.models import ChatMessageDB
 from server.db.vector_store import VectorStore
-from server.src.models.chat import ChatMessage, ChatSession
+from server.src.models.chat import ChatMessage, ChatSession, LLMMessage
 from server.src.models.story import StorySettingsDTO, process_story
 from server.src.repository.chat_repository import IChatRespository
 from server.src.repository.story_repository import IStoryRepository
@@ -14,6 +14,8 @@ def _convert_chat_message_to_db_object(user_msg: ChatMessage) -> ChatMessageDB:
 
 def _construct_chat_message(llm_response_content: str, story_id: int, user_id: int, session_id: int) -> ChatMessageDB:
     return ChatMessageDB(story_id=story_id, user_id=user_id, session_id=session_id, role='ai', content=llm_response_content)
+def _convert_to_llm_messages(messages: List[ChatMessage]) -> List[LLMMessage]:
+    return [LLMMessage.model_validate(message.model_dump()) for message in messages]
 
 class ChatService:
     def __init__(self, story_repository: IStoryRepository, chat_repository: IChatRespository, llm_service: LLMService, vector_store: VectorStore) -> None:
@@ -83,10 +85,12 @@ class ChatService:
             context: Dict[str, Any] = self._vector_store.retrieve_context(story_id=str(user_msg.story_id), session_id=str(user_msg.session_id), query=user_msg.content)
 
             # Get chat history for context
-            messages = self._chat_repository.get_messages(user_msg.session_id, limit=Config.CHAT_HISTORY_SIZE, skip=0, order_desc=True)
-
+            messages: List[ChatMessage] = self._chat_repository.get_messages(user_msg.session_id, limit=Config.CHAT_HISTORY_SIZE, skip=0, order_desc=True)
+            llm_messages: List[LLMMessage] = _convert_to_llm_messages(messages)
+            llm_messages.reverse()
+            
             # Get response from LLM
-            llm_response_content = self._llm_service.send_message(context, messages, user_msg)
+            llm_response_content = self._llm_service.send_message(context, llm_messages, user_msg.content)
             llm_response = _construct_chat_message(llm_response_content, story_id=user_msg.story_id, user_id=user_msg.user_id, session_id=user_msg.session_id)
             
             # Save llm chat message
