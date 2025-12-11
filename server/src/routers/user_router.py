@@ -39,7 +39,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], user
         )
     
 @user_router.get('/me', summary='Get details of currently logged in user', response_model=UserResponseDTO)
-async def get_me(user: int = Depends(get_current_user)):
+async def get_me(user: UserResponseDTO = Depends(get_current_user)):
     try:
         if user is None:
             raise HTTPException(

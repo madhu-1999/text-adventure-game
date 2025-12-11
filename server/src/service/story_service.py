@@ -63,7 +63,7 @@ class StoryService:
         try:
             tag = self.story_repository.get_tag_by_id(create_story.tag_id)
             if tag:
-                # Fenerate world data based on the tag and user prompt
+                # Generate world data based on the tag and user prompt
                 world: Optional[WorldDTO] = self._llm_service.create_world(tag=tag.tag, prompt=create_story.prompt) # type: ignore
                 if not world:
                     raise LLMResponseException("Could not generate world!")

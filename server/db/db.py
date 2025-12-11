@@ -3,6 +3,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from sqlalchemy import inspect
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # server/ directory
 ENV_PATH = BASE_DIR / ".env"
@@ -23,7 +25,6 @@ def get_db():
     finally:
         db.close()
         
-from sqlalchemy import inspect
 inspector = inspect(engine)
 tables = inspector.get_table_names()
 print(f"Tables in database: {tables}")
